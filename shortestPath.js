@@ -208,19 +208,17 @@ app.get("/shortest_path", async (req, res)  => {
   await generateMetroGraphWithRoutes();
   
   const { startStation, endStation } = req.query;
-  try {
-    fs.readFile("./metro_graph_with_routes.json", "utf8", (err, jsonString) => {
-      if (err) {
-        console.log("File read failed:", err);
-        return res.sendStatus(500);
-      }
-      const graph = JSON.parse(jsonString);
-      const path = findShortestPath(graph, startStation, endStation);
-      return res.send(path);
-    });
-  } catch (error) {
-    res.status(500).send(error.message);
-  }
+  fs.readFile("./metro_graph_with_routes.json", "utf8", (err, jsonString) => {
+    if (err) {
+      console.log("File read failed:", err);
+      return res.sendStatus(500);
+    }
+    const graph = JSON.parse(jsonString);
+    const path = findShortestPath(graph, startStation, endStation);
+    return res.send(path);
+  }).then(()=>{
+    console.log("file read successfully")
+  }).catch(err=>console.log(err));
 });
 
 app.listen(3000, () => console.log(`Server running on port 3000`));
