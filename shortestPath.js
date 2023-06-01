@@ -205,7 +205,7 @@ app.get("/", (_req, res)=>{
 app.get("/shortest_path", async (req, res)  => {
   await generateMetroGraphWithRoutes();
   const { startStation, endStation } = req.query;
-  fs.readFile("metro_graph_with_routes.json", "utf8", (err, jsonString) => {
+  fs.readFile("./metro_graph_with_routes.json", "utf8", (err, jsonString) => {
     if (err) {
       console.log("File read failed:", err);
       return res.sendStatus(500);
