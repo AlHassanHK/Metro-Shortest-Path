@@ -28,7 +28,7 @@ async function generateMetroGraphWithRoutes() {
       let points = geometry.map((str) => str.split(" ").map(Number));
       routesData[row["route_id"]] = points;
 
-      fs.readFile("metro_graph.json", "utf8", (err, jsonString) => {
+      fs.readFile("./metro_graph.json", "utf8", (err, jsonString) => {
         if (err) {
           console.log("File read failed:", err);
           return;
@@ -55,7 +55,7 @@ async function generateMetroGraphWithRoutes() {
           }
         }
         fs.writeFile(
-          "metro_graph_with_routes.json",
+          "./metro_graph_with_routes.json",
           JSON.stringify(graph),
           (err) => {
             if (err) {
@@ -202,18 +202,25 @@ class PriorityQueue {
 app.get("/", (_req, res)=>{
   res.json({data:"beeb beeb beeb"})
 })
+
+
 app.get("/shortest_path", async (req, res)  => {
   await generateMetroGraphWithRoutes();
+  
   const { startStation, endStation } = req.query;
-  fs.readFile("./metro_graph_with_routes.json", "utf8", (err, jsonString) => {
-    if (err) {
-      console.log("File read failed:", err);
-      return res.sendStatus(500);
-    }
-    const graph = JSON.parse(jsonString);
-    const path = findShortestPath(graph, startStation, endStation);
-    return res.send(path);
-  });
+  try {
+    fs.readFile("./metro_graph_with_routes.json", "utf8", (err, jsonString) => {
+      if (err) {
+        console.log("File read failed:", err);
+        return res.sendStatus(500);
+      }
+      const graph = JSON.parse(jsonString);
+      const path = findShortestPath(graph, startStation, endStation);
+      return res.send(path);
+    });
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
 });
 
 app.listen(3000, () => console.log(`Server running on port 3000`));
