@@ -12,6 +12,6 @@ const userDatabase = mongoose
   .then(() => {
     isConnected = true;
     console.log("database connected.");
-  });
+  }).catch((err) => console.log(err));
 
 module.exports = { userDatabase };
