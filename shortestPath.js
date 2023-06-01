@@ -3,12 +3,12 @@ const { startCase } = require("lodash");
 const express = require("express");
 const bodyParser = require("body-parser");
 const { MongoClient, ObjectId } = require("mongodb");
-const { PythonShell } = require("python-shell");
 const fs = require("fs");
 const cors = require("cors");
 const app = express();
 const { Station, Route } = require("./schema");
 require("./mongo");
+const precompute = require('./precompute');
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -20,15 +20,13 @@ async function generateMetroGraphWithRoutes() {
   try {
     let data = await Route.find({}).exec();
 
-    console.log(data);
-
     data.forEach((row) => {
       // Parse the geometry and save it in the routesData object
       let geometry = row["geometry"].match(/\(([^)]+)\)/)[1].split(", ");
       let points = geometry.map((str) => str.split(" ").map(Number));
       routesData[row["route_id"]] = points;
 
-      fs.readFile("./metro_graph.json", "utf8", (err, jsonString) => {
+      fs.readFile("metro_graph.json", "utf8", (err, jsonString) => {
         if (err) {
           console.log("File read failed:", err);
           return;
@@ -55,7 +53,7 @@ async function generateMetroGraphWithRoutes() {
           }
         }
         fs.writeFile(
-          "./metro_graph_with_routes.json",
+          "metro_graph_with_routes.json",
           JSON.stringify(graph),
           (err) => {
             if (err) {
@@ -72,17 +70,19 @@ async function generateMetroGraphWithRoutes() {
   }
 }
 
+
 Station.watch().on("change", (data) => {
-  console.log("Change detected;");
-  console.log("Stations collection was changed, updating JSON");
-  PythonShell.run("precompute.py");
-  generateMetroGraphWithRoutes();
+    console.log("Change detected");
+    console.log("Stations collection was changed, updating JSON");
+    precompute();
+    generateMetroGraphWithRoutes();
 });
+
 
 Route.watch().on("change", (data) => {
   console.log("Change detected;");
   console.log("Routes collection was changed, updating JSON");
-  PythonShell.run("precompute.py");
+  precompute();
   generateMetroGraphWithRoutes();
 });
 
@@ -137,7 +137,6 @@ function findShortestPath(graph, startNode, endNode) {
 
     // Get the part of the route between the start and end stations
     let routePoints;
-    console.log(`// ${routesData[routeId]}`);
     if (startIndex < endIndex) {
       routePoints = routesData[routeId].slice(startIndex, endIndex + 1);
     } else {
@@ -199,16 +198,10 @@ class PriorityQueue {
   }
 }
 
-app.get("/", (_req, res)=>{
-  res.json({data:"beeb beeb beeb"})
-})
-
-
 app.get("/shortest_path", async (req, res)  => {
   await generateMetroGraphWithRoutes();
-  
   const { startStation, endStation } = req.query;
-  fs.readFile("./metro_graph_with_routes.json", "utf8", (err, jsonString) => {
+  fs.readFile("metro_graph_with_routes.json", "utf8", (err, jsonString) => {
     if (err) {
       console.log("File read failed:", err);
       return res.sendStatus(500);
@@ -216,9 +209,7 @@ app.get("/shortest_path", async (req, res)  => {
     const graph = JSON.parse(jsonString);
     const path = findShortestPath(graph, startStation, endStation);
     return res.send(path);
-  }).then(()=>{
-    console.log("file read successfully")
-  }).catch(err=>console.log(err));
+  });
 });
 
-app.listen(3000, () => console.log(`Server running on port 3000`));
+app.listen(3001, () => console.log(`Server running on port 3000`));
