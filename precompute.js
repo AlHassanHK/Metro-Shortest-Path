@@ -53,7 +53,7 @@ stopsCollection.find().toArray((err, stopResults) => {
         });
 
         // Save the output to a JSON file
-        fs.writeFileSync('metro_graph.json', JSON.stringify(stops, null, 4));
+        fs.writeFileSync('./metro_graph.json', JSON.stringify(stops, null, 4));
     });
 });
 }
