@@ -1,6 +1,6 @@
+require("dotenv").config()
 const mongoose = require("mongoose");
-const mongoURL =
-  "mongodb+srv://alhassan:p7OcHSJ3LRpJTgHz@stations.r5pneer.mongodb.net/stations?retryWrites=true&w=majority";
+const mongoURL = process.env.CONNECTION_STRING;
 
 // const port = 3005
 let isConnected = false;
