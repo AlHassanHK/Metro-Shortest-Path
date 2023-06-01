@@ -199,6 +199,9 @@ class PriorityQueue {
   }
 }
 
+app.get("/", (_req, res)=>{
+  res.json({data:"beeb beeb beeb"})
+})
 app.get("/shortest_path", async (req, res)  => {
   await generateMetroGraphWithRoutes();
   const { startStation, endStation } = req.query;
