@@ -10,6 +10,10 @@ const { Station, Route } = require("./schema");
 require("./mongo");
 const precompute = require('./precompute');
 
+const path = require('path');
+
+const jsonDirectory = path.join(process.cwd(), 'json');
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors());
@@ -26,7 +30,7 @@ async function generateMetroGraphWithRoutes() {
       let points = geometry.map((str) => str.split(" ").map(Number));
       routesData[row["route_id"]] = points;
 
-      fs.readFile("./metro_graph.json", "utf8", (err, jsonString) => {
+      fs.readFile(jsonDirectory + "/metro_graph.json", "utf8", (err, jsonString) => {
         if (err) {
           console.log("File read failed:", err);
           return;
@@ -52,8 +56,8 @@ async function generateMetroGraphWithRoutes() {
             };
           }
         }
-        fs.writeFile(
-          "./metro_graph_with_routes.json",
+        fs.writeFile( jsonDirectory +
+          "/metro_graph_with_routes.json",
           JSON.stringify(graph),
           (err) => {
             if (err) {
@@ -201,7 +205,7 @@ class PriorityQueue {
 app.get("/shortest_path", async (req, res)  => {
   await generateMetroGraphWithRoutes();
   const { startStation, endStation } = req.query;
-  fs.readFile("./metro_graph_with_routes.json", "utf8", (err, jsonString) => {
+  fs.readFile(jsonDirectory + "/metro_graph_with_routes.json", "utf8", (err, jsonString) => {
     if (err) {
       console.log("File read failed:", err);
       return res.sendStatus(500);

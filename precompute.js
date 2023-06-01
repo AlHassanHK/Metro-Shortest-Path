@@ -1,6 +1,9 @@
 const mongoose = require('mongoose');
 const geolib = require('geolib');
 const fs = require('fs');
+const path = require('path');
+
+const jsonDirectory = path.join(process.cwd(), 'json');
 
 module.exports = function precompute() {
 
@@ -53,7 +56,7 @@ stopsCollection.find().toArray((err, stopResults) => {
         });
 
         // Save the output to a JSON file
-        fs.writeFileSync('./metro_graph.json', JSON.stringify(stops, null, 4));
+        fs.writeFileSync(jsonDirectory + '/metro_graph.json', JSON.stringify(stops, null, 4));
     });
 });
 }
