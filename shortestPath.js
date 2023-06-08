@@ -56,7 +56,7 @@ async function generateMetroGraphWithRoutes() {
             };
           }
         }
-        fs.writeFile( jsonDirectory +
+        fs.writeFile(jsonDirectory +
           "/metro_graph_with_routes.json",
           JSON.stringify(graph),
           (err) => {
@@ -76,10 +76,10 @@ async function generateMetroGraphWithRoutes() {
 
 
 Station.watch().on("change", (data) => {
-    console.log("Change detected");
-    console.log("Stations collection was changed, updating JSON");
-    precompute();
-    generateMetroGraphWithRoutes();
+  console.log("Change detected");
+  console.log("Stations collection was changed, updating JSON");
+  precompute();
+  generateMetroGraphWithRoutes();
 });
 
 
@@ -141,6 +141,7 @@ function findShortestPath(graph, startNode, endNode) {
 
     // Get the part of the route between the start and end stations
     let routePoints;
+    console.log(`// ${routesData[routeId]}`);
     if (startIndex < endIndex) {
       routePoints = routesData[routeId].slice(startIndex, endIndex + 1);
     } else {
@@ -153,6 +154,7 @@ function findShortestPath(graph, startNode, endNode) {
       name: start,
       coordinates: graph[start].coordinates,
       routePoints: routePoints,
+      routeId: routeId,  // Add the route ID here
     });
   }
 
@@ -161,6 +163,7 @@ function findShortestPath(graph, startNode, endNode) {
     name: endNode,
     coordinates: graph[endNode].coordinates,
     routePoints: [],
+    routeId: graph[path[path.length - 2]].connections[endNode].route_id,  // Add the route ID for the last station
   });
 
   return {
@@ -202,7 +205,7 @@ class PriorityQueue {
   }
 }
 
-app.get("/shortest_path", async (req, res)  => {
+app.get("/shortest_path", async (req, res) => {
   await generateMetroGraphWithRoutes();
   const { startStation, endStation } = req.query;
   fs.readFile(jsonDirectory + "/metro_graph_with_routes.json", "utf8", (err, jsonString) => {
