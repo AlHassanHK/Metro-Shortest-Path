@@ -205,6 +205,10 @@ class PriorityQueue {
   }
 }
 
+app.get("/", (req, res)=>{
+	res.send("ec2 up");
+});
+
 app.get("/shortest_path", async (req, res) => {
   await generateMetroGraphWithRoutes();
   const { startStation, endStation } = req.query;
@@ -219,4 +223,4 @@ app.get("/shortest_path", async (req, res) => {
   });
 });
 
-app.listen(3001, () => console.log(`Server running on port 3000`));
+app.listen(80, () => console.log(`Server running on port 3000`));
